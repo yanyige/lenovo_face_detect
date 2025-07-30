@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+"""
+@File    : config.py
+@Author  : yanyige
+@Mail    : yige.yan@qq.com
+@Time    : 2025/7/28 10:42
+@Desc    : 配置文件
+"""
 class Config:
     def __init__(self):
         self.reset()

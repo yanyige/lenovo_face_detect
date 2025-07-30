@@ -345,13 +345,15 @@ class CameraController:
             frame, ret = myframe.frametest(frame)
 
             if ret and len(ret) >= 3:
-                eyear, mouthar = ret[1], ret[2]
+                label_list, eyear, mouthar = ret[1], ret[2], ret[3]
+                self.update_action_labels(label_list[0])
                 # 检测疲劳状态
                 previous_status = self.last_status
                 current_status = self.fatigue_detector.detect_fatigue(eyear, mouthar)
             else:
                 eyear, mouthar = 0.3, 0.4
                 current_status = 'normal'
+                previous_status = current_status
                 # 重置检测器状态
                 self.fatigue_detector.eye_cycle_count = 0
                 self.fatigue_detector.mouth_cycle_count = 0
@@ -360,6 +362,7 @@ class CameraController:
             # 记录当前状态
             self.last_status = current_status
 
+            # TODO previous status
             # 状态变化时立即更新UI
             if current_status != previous_status:
                 self._update_fatigue_status(current_status)
@@ -438,17 +441,109 @@ class CameraController:
         if status == 'fatigue':
             Thread(target=self._play_warning).start()
 
-        def _play_warning(self):
-            """播放警告声音"""
-            if not self.warning_playing:
-                self.warning_playing = True
-                try:
-                    print("播放疲劳警告音频...")
-                    playsound('voice.mp3')
-                except Exception as e:
-                    print(f"播放音频时出现错误: {e}")
-                finally:
-                    self.warning_playing = False
+    
+
+    def _play_warning(self):
+        """播放警告声音"""
+        if not self.warning_playing:
+            self.warning_playing = True
+            try:
+                print("播放疲劳警告音频...")
+                playsound('voice.mp3')
+            except Exception as e:
+                print(f"播放音频时出现错误: {e}")
+            finally:
+                self.warning_playing = False
+
+    def update_action_labels(self, action_label):
+        """根据检测到的行为更新对应的UI标签"""
+        # 行为检测计数器管理
+        self.action_counter = getattr(self, 'action_counter', 0)
+
+        # 重置计数器
+        self.action_counter = max(0, self.action_counter - 1)
+
+        # 更新检测到的行为标签
+        if action_label == "phone":
+            self.parent.label_19.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>是</span></p ></body></html>")
+            self.parent.label_19.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(255, 0, 0)\n")
+            self.action_counter = 5  # 重置计数器
+
+        elif action_label == "drink":
+            self.parent.label_21.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>是</span></p ></body></html>")
+            self.parent.label_21.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(255, 0, 0)\n")
+            self.action_counter = 5  # 重置计数器
+
+        elif action_label == "smoke":
+            self.parent.label_23.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight;600;'>是</span></p ></body></html>")
+            self.parent.label_23.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(255, 0, 0)\n")
+            self.action_counter = 5  # 重置计数器
+
+        # 更新检测到的行为标签
+        if action_label == "phone":
+            self.parent.label_19.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>是</span></p ></body></html>")
+            self.parent.label_19.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(255, 0, 0)\n")
+            self.action_counter = 5  # 重置计数器
+
+        elif action_label == "drink":
+            self.parent.label_21.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>是</span></p ></body></html>")
+            self.parent.label_21.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(255, 0, 0)\n")
+            self.action_counter = 5  # 重置计数器
+
+        elif action_label == "smoke":
+            self.parent.label_23.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight;600;'>是</span></p ></body></html>")
+            self.parent.label_23.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(255, 0, 0)\n")
+            self.action_counter = 5  # 重置计数器
+
+        # 当计数器达到0时重置所有标签
+        if self.action_counter == 0:
+            # 重置手机标签
+            self.parent.label_19.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>否</span></p ></body></html>")
+            self.parent.label_19.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(85, 255, 127)\n")
+
+            # 重置喝水标签
+            self.parent.label_21.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>否</span></p ></body></html>")
+            self.parent.label_21.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(85, 255, 127)\n")
+
+            # 重置吸烟标签
+            self.parent.label_23.setText(
+                "<html><head/><body><p align='center'>"
+                "<span style='font-size:10pt;font-weight:600;'>否</span></p ></body></html>")
+            self.parent.label_23.setStyleSheet(
+                "border:3px solid rgb(66, 132, 198);\n"
+                "background-color:rgb(85, 255, 127)\n")
 
     def _update_statistics(self):
         """更新统计信息"""
@@ -508,6 +603,9 @@ class CameraController:
             "border:3px solid rgb(66, 132, 198);\n"
             f"background-color:rgb({self._get_alert_color(detector.thirty_sec_nod)})"
         )
+    
+
+        
 
     def _get_alert_color(self, count: int) -> str:
         """根据计数获取警告颜色"""

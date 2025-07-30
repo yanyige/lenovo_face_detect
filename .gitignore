@@ -134,4 +134,7 @@ voice.mp3
 temp/
 tmp/
 *.tmp
-*.temp 
+*.temp
+
+models
+utils

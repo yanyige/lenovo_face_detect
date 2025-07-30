@@ -7,6 +7,7 @@
 """
 import time
 import cv2
+import mydetect
 import numpy as np
 import myfatigue
 
@@ -22,6 +23,7 @@ def frametest(frame):
 
     # 图像处理流水线
     ret = []
+    label_list = []
     if frame is not None and hasattr(frame, 'shape'):
         ret.append(frame)
     else:
@@ -40,14 +42,18 @@ def frametest(frame):
         _fps_state['frame_count'] += 1
         current_time = time.time()
 
+        # TODO frame
+
         # 处理返回的元组 (frame, eyear, mouthar)
         result = myfatigue.detect_fatigue(frame)
 
         # 如果返回的是元组，则提取帧和眼睛、嘴巴纵横比
         if isinstance(result, tuple) and len(result) == 3:
             frame, eyear, mouthar = result
+            frame, label_list = detect_action(frame, label_list)
             # 打印纵横比
             print(f"眼睛纵横比: {eyear:.3f}, 嘴巴纵横比: {mouthar:.3f}")
+            ret.append(label_list)
             # 可以在这里使用 eyear 和 mouthar 进行疲劳检测
             ret.append(round(eyear, 3))
             ret.append(round(mouthar, 3))
@@ -86,4 +92,25 @@ def frametest(frame):
         traceback.print_exc()
         return frame, ret
 
+# 调用模型检测
+def detect_action(frame, labellist):
+    action = mydetect.predict(frame)
 
+    for label, prob, xyxy in action:
+        print("label", label)
+        labellist.append(label)
+        
+        # 置信度和标签
+        text = label + str(prob)
+
+        # 绘制框
+        left = int(xyxy[0])
+        top = int(xyxy[1])
+        right = int(xyxy[2])
+        bottom = int(xyxy[3])
+        # 绘制框
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 1)
+
+        # 绘制标签
+        cv2.putText(frame, text, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+    return frame, labellist
